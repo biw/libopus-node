@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "es2016",                                
+    "module": "commonjs",   
+    "lib": ["es2016" ],        
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "strictBuiltinIteratorReturn": true,
+    "useUnknownInCatchVariables": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": true,
+    "skipLibCheck": true,
+    "outDir": "./dist"
+  }
+}
