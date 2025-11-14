@@ -27,6 +27,7 @@
                 "opus/src/opus_projection_decoder.c",
                 "opus/src/mapping_matrix.c",
                 "opus/src/opus_compare.c",
+                "opus/src/extensions.c",
                 "opus/src/mlp.c",
                 "opus/src/opus.c",
                 "opus/src/opus_multistream_decoder.c",
