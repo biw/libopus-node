@@ -15,7 +15,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: recursive
 
       - name: Install Node v${{ matrix.node }}
         uses: actions/setup-node@v3
@@ -52,7 +52,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: recursive
 
       - name: Install Node v${{ matrix.node }}
         uses: actions/setup-node@v3
@@ -90,7 +90,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: recursive
 
       - name: Install dependencies
         run: npm install --unsafe-perm --build-from-source
@@ -117,7 +117,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: recursive
 
       - name: Install Node v${{ matrix.node }}
         uses: actions/setup-node@v3
@@ -151,7 +151,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: recursive
 
       - name: Install Node v${{ matrix.node }}
         uses: actions/setup-node@v3
@@ -185,7 +185,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: recursive
 
       - name: Install Node v${{ matrix.node }}
         uses: actions/setup-node@v3
@@ -222,7 +222,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: recursive
 
       - name: Install Node v${{ matrix.node }}
         uses: actions/setup-node@v3
@@ -260,7 +260,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: recursive
 
       - name: Setup musl cross compiler
         run: |

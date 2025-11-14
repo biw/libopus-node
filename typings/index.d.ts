@@ -1,4 +1,4 @@
-declare module '@discordjs/opus' {
+declare module 'libopus' {
 	export class OpusEncoder {
 		public constructor(rate: number, channels: number);
 		public encode(buf: Buffer): Buffer;
