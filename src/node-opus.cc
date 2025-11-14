@@ -326,4 +326,5 @@ Napi::Object InitAll(Napi::Env env, Napi::Object exports)
   return OpusEncoderWrap::Init(env, exports);
 }
 
-NODE_API_MODULE(opus, InitAll)
+// instead of NODE_API_MODULE(opus, InitAll)
+NODE_API_MODULE(NODE_GYP_MODULE_NAME, InitAll)

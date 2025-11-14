@@ -41,7 +41,7 @@ jobs:
         run: yarn install --immutable
 
       - name: Package prebuild
-        run: yarn build
+        run: yarn node-pre-gyp build package
 
       - name: Upload prebuild asset
         uses: icrawl/action-artifact@v2
@@ -67,11 +67,10 @@ jobs:
       # Workaround https://github.com/actions/runner/issues/801
       - name: Setup container
         run: |
-          docker run --name runner --rm -it -d -v $PWD:/node-opus -w /node-opus node:${{ matrix.node }}-alpine
+          docker run --name runner --rm -d -v ${{ github.workspace }}:/node-opus -w /node-opus node:${{ matrix.node }}-alpine
 
       - name: Setup env with Node v${{ matrix.node }}
         run: |
-          docker exec runner apk add --update
           docker exec runner apk add --no-cache ca-certificates git curl build-base python3 g++ make corepack
 
       - name: Enable Corepack
@@ -83,7 +82,7 @@ jobs:
         run: docker exec runner yarn install --immutable --unsafe-perm
 
       - name: Package prebuild
-        run: docker exec runner yarn build
+        run: docker exec runner yarn node-pre-gyp build package
 
       - name: Stop container
         run: docker rm -f runner

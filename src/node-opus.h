@@ -1,43 +1,37 @@
-using namespace Napi;
+#pragma once
 
-#define FRAME_SIZE 960
-#define MAX_FRAME_SIZE 6 * 960
-#define MAX_PACKET_SIZE 3 * 1276
-#define BITRATE 64000
+#include <napi.h>
+#include "../deps/opus/include/opus.h"
 
-class OpusEncoder : public ObjectWrap<OpusEncoder> {
-	private:
-		OpusEncoder* encoder;
-		OpusDecoder* decoder;
+class OpusEncoderWrap : public Napi::ObjectWrap<OpusEncoderWrap>
+{
+public:
+  static Napi::Object Init(Napi::Env env, Napi::Object exports);
 
-		opus_int32 rate;
-		int channels;
-		int application;
+  OpusEncoderWrap(const Napi::CallbackInfo &info);
+  ~OpusEncoderWrap();
 
-		unsigned char outOpus[MAX_PACKET_SIZE];
-		opus_int16* outPcm;
+  // JS-exposed methods
+  Napi::Value Encode(const Napi::CallbackInfo &info);
+  Napi::Value Decode(const Napi::CallbackInfo &info);
+  Napi::Value ApplyEncoderCTL(const Napi::CallbackInfo &info);
+  Napi::Value ApplyDecoderCTL(const Napi::CallbackInfo &info);
+  Napi::Value SetBitrate(const Napi::CallbackInfo &info);
+  Napi::Value GetBitrate(const Napi::CallbackInfo &info);
 
-	protected:
-		int EnsureEncoder();
+private:
+  // Helpers
+  int EnsureEncoder();
+  int EnsureDecoder();
 
-		int EnsureDecoder();
+  // Members (must match the .cpp)
+  opus_int32 rate_{0};
+  int channels_{0};
+  int application_{OPUS_APPLICATION_AUDIO};
 
-	public:
-		static Object Init(Napi::Env env, Object exports);
+  ::OpusEncoder *enc_{nullptr};
+  ::OpusDecoder *dec_{nullptr};
 
-		OpusEncoder(const CallbackInfo& args);
-	
-		~OpusEncoder();
-
-		Napi::Value Encode(const CallbackInfo& args);
-		
-		Napi::Value Decode(const CallbackInfo& args);
-		
-		void ApplyEncoderCTL(const CallbackInfo& args);
-		
-		void ApplyDecoderCTL(const CallbackInfo& args);
-		
-		void SetBitrate(const CallbackInfo& args);
-		
-		Napi::Value GetBitrate(const CallbackInfo& args);
+  opus_int16 *outPcm_{nullptr};     // channels_ * MAX_FRAME_SIZE
+  unsigned char *outOpus_{nullptr}; // MAX_PACKET_SIZE
 };

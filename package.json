@@ -6,8 +6,9 @@
 	"types": "typings/index.d.ts",
 	"license": "MIT",
 	"scripts": {
-		"prepare": "node-pre-gyp install --fallback-to-build",
-		"build": "node-pre-gyp install build package",
+		"install": "node-gyp-build",
+		"build": "node-gyp-build",
+		"prebuild": "prebuildify --napi --strip --tag-libc",
 		"lint": "prettier --check . && eslint lib --format=pretty",
 		"lint:fix": "prettier --write . && eslint lib --fix --format=pretty",
 		"test": "node tests/test.js"
@@ -26,8 +27,8 @@
 		"url": "https://github.com/biw/libopus-node.git"
 	},
 	"dependencies": {
-		"@mapbox/node-pre-gyp": "2.0.0",
-		"node-addon-api": "8.3.1"
+		"node-addon-api": "8.3.1",
+		"node-gyp-build": "^4.8.0"
 	},
 	"devDependencies": {
 		"@types/node": "22.15.21",
@@ -35,21 +36,12 @@
 		"eslint-config-neon": "0.2.7",
 		"eslint-formatter-pretty": "6.0.1",
 		"node-gyp": "11.2.0",
+		"prebuildify": "^6.0.1",
 		"prettier": "3.5.3",
 		"typescript": "5.8.3"
 	},
 	"engines": {
 		"node": ">=18.0.0"
-	},
-	"binary": {
-		"module_name": "libopus-node",
-		"module_path": "./prebuild/{node_abi}-napi-v{napi_build_version}-{platform}-{arch}-{libc}-{libc_version}/",
-		"remote_path": "v{version}",
-		"package_name": "{module_name}-v{version}-{node_abi}-napi-v{napi_build_version}-{platform}-{arch}-{libc}-{libc_version}.tar.gz",
-		"host": "https://github.com/biw/libopus-node/releases/download/",
-		"napi_versions": [
-			3
-		]
 	},
 	"packageManager": "yarn@4.9.1"
 }
