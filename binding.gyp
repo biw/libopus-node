@@ -2,6 +2,7 @@
     "targets": [
         {
             "target_name": "<(module_name)",
+            "product_name": "<(module_name)",
             "product_dir": "<(module_path)",
             "dependencies": ["deps/binding.gyp:libopus"],
             "cflags!": ["-fno-exceptions"],
@@ -29,7 +30,8 @@
                 "GTEST_RELATIVE_PATH",
                 "JSONCPP_RELATIVE_PATH",
                 "WEBRTC_RELATIVE_PATH",
-                "POSIX," "__STDC_FORMAT_MACROS",
+                "POSIX",
+                "__STDC_FORMAT_MACROS",
                 "DYNAMIC_ANNOTATIONS_ENABLED=0",
                 "NAPI_DISABLE_CPP_EXCEPTIONS",
                 "NAPI_VERSION=<(napi_build_version)",

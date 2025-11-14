@@ -6,12 +6,10 @@
 #include <cstring>
 #include "../deps/opus/include/opus.h"
 
-using namespace Napi;
-
 // -----------------------------------------------------------------------------
 // Constants (keep in sync with your JavaScript layer)
 // -----------------------------------------------------------------------------
-static constexpr int MAX_FRAME_SIZE = 5760;  // 120 ms @ 48 kHz mono
+static constexpr int MAX_FRAME_SIZE = 5760;  // 120 ms @ 48 kHz mono
 static constexpr int MAX_PACKET_SIZE = 1276; // per Opus spec
 
 // -----------------------------------------------------------------------------
@@ -45,21 +43,21 @@ static const char *StrError(int code)
 // -----------------------------------------------------------------------------
 // OpusEncoder class – JS visible
 // -----------------------------------------------------------------------------
-class OpusEncoderWrap : public ObjectWrap<OpusEncoderWrap>
+class OpusEncoderWrap : public Napi::ObjectWrap<OpusEncoderWrap>
 {
 public:
-  static Object Init(Napi::Env env, Object exports);
-  OpusEncoderWrap(const CallbackInfo &);
+  static Napi::Object Init(Napi::Env env, Napi::Object exports);
+  OpusEncoderWrap(const Napi::CallbackInfo &);
   ~OpusEncoderWrap();
 
 private:
   // JS‑exposed methods
-  Value Encode(const CallbackInfo &);
-  Value Decode(const CallbackInfo &);
-  Value ApplyEncoderCTL(const CallbackInfo &);
-  Value ApplyDecoderCTL(const CallbackInfo &);
-  Value SetBitrate(const CallbackInfo &);
-  Value GetBitrate(const CallbackInfo &);
+  Napi::Value Encode(const Napi::CallbackInfo &);
+  Napi::Value Decode(const Napi::CallbackInfo &);
+  Napi::Value ApplyEncoderCTL(const Napi::CallbackInfo &);
+  Napi::Value ApplyDecoderCTL(const Napi::CallbackInfo &);
+  Napi::Value SetBitrate(const Napi::CallbackInfo &);
+  Napi::Value GetBitrate(const Napi::CallbackInfo &);
 
   // Helpers
   int EnsureEncoder();
@@ -78,10 +76,13 @@ private:
 // -----------------------------------------------------------------------------
 // Constructor / destructor
 // -----------------------------------------------------------------------------
-OpusEncoderWrap::OpusEncoderWrap(const CallbackInfo &info) : ObjectWrap<OpusEncoderWrap>(info)
+OpusEncoderWrap::OpusEncoderWrap(const Napi::CallbackInfo &info) : Napi::ObjectWrap<OpusEncoderWrap>(info)
 {
   if (info.Length() < 2 || !info[0].IsNumber() || !info[1].IsNumber())
-    throw TypeError::New(info.Env(), "Expected (rate: number, channels: number)");
+  {
+    Napi::TypeError::New(info.Env(), "Expected (rate: number, channels: number)").ThrowAsJavaScriptException();
+    return;
+  }
 
   rate_ = info[0].ToNumber().Int32Value();
   channels_ = info[1].ToNumber().Int32Value();
@@ -128,134 +129,191 @@ int OpusEncoderWrap::EnsureDecoder()
 // -----------------------------------------------------------------------------
 // Encode PCM -> Opus packet (returns Buffer)
 // -----------------------------------------------------------------------------
-Value OpusEncoderWrap::Encode(const CallbackInfo &info)
+Napi::Value OpusEncoderWrap::Encode(const Napi::CallbackInfo &info)
 {
-  Env env = info.Env();
+  Napi::Env env = info.Env();
   if (info.Length() < 1 || !info[0].IsBuffer())
-    throw TypeError::New(env, "Argument must be a Buffer containing 16‑bit PCM");
+  {
+    Napi::TypeError::New(env, "Argument must be a Buffer containing 16‑bit PCM").ThrowAsJavaScriptException();
+    return env.Null();
+  }
 
   if (EnsureEncoder() != OPUS_OK)
-    throw Error::New(env, "Failed to create libopus encoder (bad params?)");
+  {
+    Napi::Error::New(env, "Failed to create libopus encoder (bad params?)").ThrowAsJavaScriptException();
+    return env.Null();
+  }
 
-  Buffer<char> buf = info[0].As<Buffer<char>>();
+  Napi::Buffer<char> buf = info[0].As<Napi::Buffer<char>>();
   if (buf.Length() % (2 * channels_) != 0)
-    throw RangeError::New(env, "PCM buffer length must be multiple of (channels*2 bytes)");
+  {
+    Napi::RangeError::New(env, "PCM buffer length must be multiple of (channels*2 bytes)").ThrowAsJavaScriptException();
+    return env.Null();
+  }
 
   const opus_int16 *pcm = reinterpret_cast<const opus_int16 *>(buf.Data());
   int frameSize = buf.Length() / 2 / channels_;
   if (frameSize > MAX_FRAME_SIZE)
-    throw RangeError::New(env, "Frame exceeds MAX_FRAME_SIZE");
+  {
+    Napi::RangeError::New(env, "Frame exceeds MAX_FRAME_SIZE").ThrowAsJavaScriptException();
+    return env.Null();
+  }
 
   int clen = opus_encode(enc_, pcm, frameSize, outOpus_, MAX_PACKET_SIZE);
   if (clen < 0)
-    throw Error::New(env, StrError(clen));
+  {
+    Napi::Error::New(env, StrError(clen)).ThrowAsJavaScriptException();
+    return env.Null();
+  }
 
-  return Buffer<char>::Copy(env, reinterpret_cast<char *>(outOpus_), clen);
+  return Napi::Buffer<char>::Copy(env, reinterpret_cast<char *>(outOpus_), clen);
 }
 
 // -----------------------------------------------------------------------------
 // Decode Opus packet -> PCM buffer
 // -----------------------------------------------------------------------------
-Value OpusEncoderWrap::Decode(const CallbackInfo &info)
+Napi::Value OpusEncoderWrap::Decode(const Napi::CallbackInfo &info)
 {
-  Env env = info.Env();
+  Napi::Env env = info.Env();
   if (info.Length() < 1 || !info[0].IsBuffer())
-    throw TypeError::New(env, "Argument must be a Buffer");
+  {
+    Napi::TypeError::New(env, "Argument must be a Buffer").ThrowAsJavaScriptException();
+    return env.Null();
+  }
 
   if (EnsureDecoder() != OPUS_OK)
-    throw Error::New(env, "Failed to create libopus decoder");
+  {
+    Napi::Error::New(env, "Failed to create libopus decoder").ThrowAsJavaScriptException();
+    return env.Null();
+  }
 
-  Buffer<unsigned char> buf = info[0].As<Buffer<unsigned char>>();
+  Napi::Buffer<unsigned char> buf = info[0].As<Napi::Buffer<unsigned char>>();
   int dlen = opus_decode(dec_, buf.Data(), buf.Length(), outPcm_, MAX_FRAME_SIZE, 0);
   if (dlen < 0)
-    throw Error::New(env, StrError(dlen));
+  {
+    Napi::Error::New(env, StrError(dlen)).ThrowAsJavaScriptException();
+    return env.Null();
+  }
 
   size_t bytes = static_cast<size_t>(dlen) * channels_ * sizeof(opus_int16);
-  return Buffer<char>::Copy(env, reinterpret_cast<char *>(outPcm_), bytes);
+  return Napi::Buffer<char>::Copy(env, reinterpret_cast<char *>(outPcm_), bytes);
 }
 
 // -----------------------------------------------------------------------------
 // CTL helpers (encoder / decoder generic)
 // -----------------------------------------------------------------------------
-Value OpusEncoderWrap::ApplyEncoderCTL(const CallbackInfo &info)
+Napi::Value OpusEncoderWrap::ApplyEncoderCTL(const Napi::CallbackInfo &info)
 {
-  Env env = info.Env();
+  Napi::Env env = info.Env();
   if (info.Length() < 2 || !info[0].IsNumber() || !info[1].IsNumber())
-    throw TypeError::New(env, "Expected (ctl: number, value: number)");
+  {
+    Napi::TypeError::New(env, "Expected (ctl: number, value: number)").ThrowAsJavaScriptException();
+    return env.Null();
+  }
 
   if (EnsureEncoder() != OPUS_OK)
-    throw Error::New(env, "Encoder not initialised");
+  {
+    Napi::Error::New(env, "Encoder not initialised").ThrowAsJavaScriptException();
+    return env.Null();
+  }
 
   int ctl = info[0].ToNumber().Int32Value();
   int value = info[1].ToNumber().Int32Value();
   int rc = opus_encoder_ctl(enc_, ctl, value);
   if (rc != OPUS_OK)
-    throw Error::New(env, StrError(rc));
-  return Number::New(env, rc);
+  {
+    Napi::Error::New(env, StrError(rc)).ThrowAsJavaScriptException();
+    return env.Null();
+  }
+  return Napi::Number::New(env, rc);
 }
 
-Value OpusEncoderWrap::ApplyDecoderCTL(const CallbackInfo &info)
+Napi::Value OpusEncoderWrap::ApplyDecoderCTL(const Napi::CallbackInfo &info)
 {
-  Env env = info.Env();
+  Napi::Env env = info.Env();
   if (info.Length() < 2 || !info[0].IsNumber() || !info[1].IsNumber())
-    throw TypeError::New(env, "Expected (ctl: number, value: number)");
+  {
+    Napi::TypeError::New(env, "Expected (ctl: number, value: number)").ThrowAsJavaScriptException();
+    return env.Null();
+  }
 
   if (EnsureDecoder() != OPUS_OK)
-    throw Error::New(env, "Decoder not initialised");
+  {
+    Napi::Error::New(env, "Decoder not initialised").ThrowAsJavaScriptException();
+    return env.Null();
+  }
 
   int ctl = info[0].ToNumber().Int32Value();
   int value = info[1].ToNumber().Int32Value();
   int rc = opus_decoder_ctl(dec_, ctl, value);
   if (rc != OPUS_OK)
-    throw Error::New(env, StrError(rc));
-  return Number::New(env, rc);
+  {
+    Napi::Error::New(env, StrError(rc)).ThrowAsJavaScriptException();
+    return env.Null();
+  }
+  return Napi::Number::New(env, rc);
 }
 
 // -----------------------------------------------------------------------------
 // Set / get bitrate with proper error propagation
 // -----------------------------------------------------------------------------
-Value OpusEncoderWrap::SetBitrate(const CallbackInfo &info)
+Napi::Value OpusEncoderWrap::SetBitrate(const Napi::CallbackInfo &info)
 {
-  Env env = info.Env();
+  Napi::Env env = info.Env();
   if (info.Length() < 1 || !info[0].IsNumber())
-    throw TypeError::New(env, "Expected bitrate (number)");
+  {
+    Napi::TypeError::New(env, "Expected bitrate (number)").ThrowAsJavaScriptException();
+    return env.Null();
+  }
 
   int bitrate = info[0].ToNumber().Int32Value();
   if (EnsureEncoder() != OPUS_OK)
-    throw Error::New(env, "Encoder not initialised");
+  {
+    Napi::Error::New(env, "Encoder not initialised").ThrowAsJavaScriptException();
+    return env.Null();
+  }
 
   int rc = opus_encoder_ctl(enc_, OPUS_SET_BITRATE(bitrate));
   if (rc != OPUS_OK)
-    throw Error::New(env, StrError(rc));
-  return Number::New(env, rc);
+  {
+    Napi::Error::New(env, StrError(rc)).ThrowAsJavaScriptException();
+    return env.Null();
+  }
+  return Napi::Number::New(env, rc);
 }
 
-Value OpusEncoderWrap::GetBitrate(const CallbackInfo &info)
+Napi::Value OpusEncoderWrap::GetBitrate(const Napi::CallbackInfo &info)
 {
-  Env env = info.Env();
+  Napi::Env env = info.Env();
   if (EnsureEncoder() != OPUS_OK)
-    throw Error::New(env, "Encoder not initialised");
+  {
+    Napi::Error::New(env, "Encoder not initialised").ThrowAsJavaScriptException();
+    return env.Null();
+  }
 
   opus_int32 br = 0;
   int rc = opus_encoder_ctl(enc_, OPUS_GET_BITRATE(&br));
   if (rc != OPUS_OK)
-    throw Error::New(env, StrError(rc));
-  return Number::New(env, br);
+  {
+    Napi::Error::New(env, StrError(rc)).ThrowAsJavaScriptException();
+    return env.Null();
+  }
+  return Napi::Number::New(env, br);
 }
 
 // -----------------------------------------------------------------------------
 // JS class registration
 // -----------------------------------------------------------------------------
-Object OpusEncoderWrap::Init(Napi::Env env, Object exports)
+Napi::Object OpusEncoderWrap::Init(Napi::Env env, Napi::Object exports)
 {
-  Function ctor = DefineClass(env, "OpusEncoder", {
-                                                      InstanceMethod("encode", &OpusEncoderWrap::Encode),
-                                                      InstanceMethod("decode", &OpusEncoderWrap::Decode),
-                                                      InstanceMethod("applyEncoderCTL", &OpusEncoderWrap::ApplyEncoderCTL),
-                                                      InstanceMethod("applyDecoderCTL", &OpusEncoderWrap::ApplyDecoderCTL),
-                                                      InstanceMethod("setBitrate", &OpusEncoderWrap::SetBitrate),
-                                                      InstanceMethod("getBitrate", &OpusEncoderWrap::GetBitrate),
-                                                  });
+  Napi::Function ctor = Napi::ObjectWrap<OpusEncoderWrap>::DefineClass(env, "OpusEncoder", {
+                                                                                               InstanceMethod("encode", &OpusEncoderWrap::Encode),
+                                                                                               InstanceMethod("decode", &OpusEncoderWrap::Decode),
+                                                                                               InstanceMethod("applyEncoderCTL", &OpusEncoderWrap::ApplyEncoderCTL),
+                                                                                               InstanceMethod("applyDecoderCTL", &OpusEncoderWrap::ApplyDecoderCTL),
+                                                                                               InstanceMethod("setBitrate", &OpusEncoderWrap::SetBitrate),
+                                                                                               InstanceMethod("getBitrate", &OpusEncoderWrap::GetBitrate),
+                                                                                           });
   exports.Set("OpusEncoder", ctor);
   return exports;
 }
@@ -263,7 +321,7 @@ Object OpusEncoderWrap::Init(Napi::Env env, Object exports)
 // -----------------------------------------------------------------------------
 // Addon entry point
 // -----------------------------------------------------------------------------
-Object InitAll(Napi::Env env, Object exports)
+Napi::Object InitAll(Napi::Env env, Napi::Object exports)
 {
   return OpusEncoderWrap::Init(env, exports);
 }

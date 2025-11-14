@@ -7,7 +7,7 @@ This is a fork of [github.com/discordjs/opus](https://github.com/discordjs/opus)
 ## Usage
 
 ```js
-const { OpusEncoder } = require('libopus');
+const { OpusEncoder } = require('libopus-node');
 
 // Create the encoder.
 // Specify 48kHz sampling rate and 2 channel size.
