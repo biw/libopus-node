@@ -1,6 +1,8 @@
 # libopus-js [![Build](https://github.com/biw/libopus-js/workflows/Build/badge.svg)](https://github.com/biw/libopus-js/actions?query=workflow%3ABuild) [![Prebuild](https://github.com/biw/libopus-js/workflows/Prebuild/badge.svg)](https://github.com/biw/libopus-js/actions?query=workflow%3APrebuild)
 
-> Native bindings to libopus v1.3
+> Native bindings to libopus v1.5
+
+This is a fork of [github.com/discordjs/opus](https://github.com/discordjs/opus) with support for ESM.
 
 ## Usage
 

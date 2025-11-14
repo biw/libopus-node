@@ -1,3 +1,4 @@
 [submodule "deps/opus"]
 	path = deps/opus
 	url = https://github.com/xiph/opus
+	# Tracking tag: v1.5.2
