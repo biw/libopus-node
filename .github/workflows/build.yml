@@ -74,11 +74,15 @@ jobs:
 
       - name: Build musl prebuilds in Alpine
         run: |
+          mkdir -p .tmp
           docker run --rm \
             -v "${{ github.workspace }}:/work" \
             -w /work \
+            -e TMPDIR=/work/.tmp \
             node:${{ matrix.node }}-alpine \
             sh -lc '
+              set -euo pipefail
+              apk add --no-cache python3 make g++ &&
               corepack enable &&
               yarn install --immutable --unsafe-perm &&
               # Build N-API prebuilds for musl, tagging libc so node-gyp-build

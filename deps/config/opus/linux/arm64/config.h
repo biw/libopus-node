@@ -98,10 +98,10 @@
 /* #undef OPUS_ARM_MAY_HAVE_MEDIA */
 
 /* Define if compiler supports NEON instructions */
-/* #undef OPUS_ARM_MAY_HAVE_NEON */
+#define OPUS_ARM_MAY_HAVE_NEON 1
 
 /* Compiler supports ARMv7 Neon Intrinsics */
-/* #undef OPUS_ARM_MAY_HAVE_NEON_INTR */
+#define OPUS_ARM_MAY_HAVE_NEON_INTR 1
 
 /* Define if binary requires EDSP instruction support */
 /* #undef OPUS_ARM_PRESUME_EDSP */
@@ -113,7 +113,7 @@
 /* #undef OPUS_ARM_PRESUME_NEON */
 
 /* Define if binary requires NEON intrinsics support */
-/* #undef OPUS_ARM_PRESUME_NEON_INTR */
+#define OPUS_ARM_PRESUME_NEON_INTR 1
 
 /* This is a build of OPUS */
 #define OPUS_BUILD /**/
