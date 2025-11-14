@@ -25,15 +25,31 @@ jobs:
           submodules: recursive
 
       - name: Install Node v${{ matrix.node }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
 
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Cache Yarn dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            .yarn/cache
+            .yarn/install-state.gz
+          key: ${{ runner.os }}-yarn-${{ github.ref }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-${{ github.ref }}-
+            ${{ runner.os }}-yarn-
+
       - name: Install dependencies
-        run: npm install --build-from-source
+        env:
+          npm_config_build_from_source: true
+        run: yarn install --immutable
 
       - name: Package prebuild
-        run: npm run build
+        run: yarn prebuild
 
       - name: Upload prebuild asset
         uses: icrawl/action-artifact@v2
@@ -55,7 +71,10 @@ jobs:
       - name: Setup env with Node v${{ matrix.node }}
         run: |
           apk add --update
-          apk add --no-cache ca-certificates git curl build-base python3 g++ make
+          apk add --no-cache ca-certificates git curl build-base python3 g++ make corepack
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -63,10 +82,12 @@ jobs:
           submodules: recursive
 
       - name: Install dependencies
-        run: npm install --unsafe-perm --build-from-source
+        env:
+          npm_config_build_from_source: true
+        run: yarn install --immutable --unsafe-perm
 
       - name: Package prebuild
-        run: npm run build
+        run: yarn build
 
       - name: Upload prebuild asset
         uses: icrawl/action-artifact@v2
@@ -90,17 +111,33 @@ jobs:
           submodules: recursive
 
       - name: Install Node v${{ matrix.node }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
 
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Cache Yarn dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            .yarn/cache
+            .yarn/install-state.gz
+          key: ${{ runner.os }}-yarn-${{ github.ref }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-${{ github.ref }}-
+            ${{ runner.os }}-yarn-
+
       - name: Install dependencies
-        run: npm install --build-from-source
+        env:
+          npm_config_build_from_source: true
+        run: yarn install --immutable
 
       - name: Package prebuild
         run: |
           sudo apt update -y && sudo apt install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-          CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-g++ npx node-pre-gyp --target_arch=arm64 configure build package
+          CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-g++ yarn node-pre-gyp --target_arch=arm64 configure build package
 
       - name: Upload prebuild asset
         uses: icrawl/action-artifact@v2
@@ -124,15 +161,29 @@ jobs:
           submodules: recursive
 
       - name: Install Node v${{ matrix.node }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
 
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Cache Yarn dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            .yarn/cache
+            .yarn/install-state.gz
+          key: ${{ runner.os }}-yarn-${{ github.ref }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-${{ github.ref }}-
+            ${{ runner.os }}-yarn-
+
       - name: Install dependencies
-        run: npm install --build-from-source
+        run: yarn install --immutable
 
       - name: Package prebuild
-        run: npm run build
+        run: yarn prebuild
 
       - name: Upload prebuild asset
         uses: icrawl/action-artifact@v2
@@ -154,7 +205,10 @@ jobs:
       - name: Setup env with Node v${{ matrix.node }}
         run: |
           apk add --update
-          apk add --no-cache ca-certificates git curl build-base python3 g++ make
+          apk add --no-cache ca-certificates git curl build-base python3 g++ make corepack
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -168,13 +222,15 @@ jobs:
           $(pwd)/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc --version
 
       - name: Install dependencies
-        run: npm install --unsafe-perm --build-from-source
+        env:
+          npm_config_build_from_source: true
+        run: yarn install --immutable --unsafe-perm
 
       - name: Package prebuild
         run: |
           CC=$(pwd)/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc \
           CXX=$(pwd)/aarch64-linux-musl-cross/bin/aarch64-linux-musl-g++ \
-          npx node-pre-gyp --target_arch=arm64 configure build package
+          yarn node-pre-gyp --target_arch=arm64 configure build package
 
       - name: Upload prebuild asset
         uses: icrawl/action-artifact@v2
