@@ -9,8 +9,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-12, macos-13, ubuntu-20.04, ubuntu-22.04, windows-2019, windows-2022]
-        node: [20, 22, 24, 25, 26]
+        os: [macos-12, macos-13, ubuntu-20.04, ubuntu-22.04, windows-2022]
+        node: [20, 22, 24, 25]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -43,7 +43,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [20, 22, 24, 25, 26]
+        node: [20, 22, 24, 25]
     steps:
       - name: Setup env with Node v${{ matrix.node }}
         run: |
@@ -75,7 +75,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-20.04, ubuntu-22.04]
-        node: [20, 22, 24, 25, 26]
+        node: [20, 22, 24, 25]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -109,7 +109,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-14]
-        node: [20, 22, 24, 25, 26]
+        node: [20, 22, 24, 25]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -142,7 +142,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [20, 22, 24, 25, 26]
+        node: [20, 22, 24, 25]
     steps:
       - name: Setup env with Node v${{ matrix.node }}
         run: |

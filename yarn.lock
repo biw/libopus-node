@@ -3952,9 +3952,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"libopus@workspace:.":
+"libopus-node@workspace:.":
   version: 0.0.0-use.local
-  resolution: "libopus@workspace:."
+  resolution: "libopus-node@workspace:."
   dependencies:
     "@mapbox/node-pre-gyp": "npm:2.0.0"
     "@types/node": "npm:22.15.21"
