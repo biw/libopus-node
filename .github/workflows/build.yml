@@ -84,7 +84,7 @@ jobs:
               set -euo pipefail
               apk add --no-cache python3 make g++ &&
               corepack enable &&
-              yarn install --immutable --unsafe-perm &&
+              yarn install --immutable &&
               # Build N-API prebuilds for musl, tagging libc so node-gyp-build
               # can prefer them on Alpine.
               yarn prebuild
