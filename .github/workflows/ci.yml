@@ -182,7 +182,14 @@ jobs:
         with:
           pattern: prebuild-*
           merge-multiple: true
-          path: artifacts
+          path: artifacts/builds
+
+      - name: Download musl artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: prebuild-musl-*
+          merge-multiple: true
+          path: artifacts/musl
 
       - name: Expand prebuild archives
         run: |
