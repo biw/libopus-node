@@ -200,11 +200,19 @@ jobs:
           for archive in artifacts/**/*.tar.gz; do
             found=true
             tar -xzf "$archive" -C prebuilds
+            rm -f "$archive"
           done
           if [ "$found" = false ]; then
             echo "No prebuild archives were downloaded." >&2
             exit 1
           fi
+
+        # IMPORTANT: npm >= 11.5.1 and npm publish, not yarn npm publish
+      - name: Ensure recent npm for trusted publishing
+        run: npm install -g npm@latest
+
+      - name: Verify npm version
+        run: npm --version
 
       - name: Publish to npm via trusted publisher
         run: npm publish --provenance --access public

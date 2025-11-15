@@ -208,11 +208,11 @@ try {
 
 Prebuilt binaries are provided for:
 
-| Operating System | Architectures         |
-| ---------------- | --------------------- |
-| Linux            | x64, ia32, arm, arm64 |
-| macOS            | x64, arm64            |
-| Windows          | x64                   |
+| Operating System | Architectures |
+| ---------------- | ------------- |
+| Linux            | x64, arm64    |
+| macOS            | x64, arm64    |
+| Windows          | x64           |
 
 If a prebuilt binary is not available for your platform, Node will attempt to build from source during installation; this requires a working C/C++ toolchain and build tools for your OS.
 
