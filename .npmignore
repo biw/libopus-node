@@ -1,0 +1,10 @@
+.github/
+.gitmodules
+.editorconfig
+.gitattributes
+.yarnrc.yml
+tests/
+src/tests/
+eslint.config.mjs
+tsup.config.ts
+tsconfig.json
