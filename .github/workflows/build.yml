@@ -55,8 +55,14 @@ jobs:
       - name: Build N-API prebuilds
         run: yarn prebuild
 
-      # TODO: optionally upload the prebuilds as an artifact if you want to
-      # gate publishing on CI or aggregate from multiple jobs.
+      - name: Archive prebuilds for ${{ matrix.os }}
+        run: tar -czf prebuilds-${{ matrix.os }}.tar.gz -C prebuilds .
+
+      - name: Upload prebuilds artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: prebuild-${{ matrix.os }}
+          path: prebuilds-${{ matrix.os }}.tar.gz
 
   prebuild_musl:
     name: Prebuild (linux-musl) with Node ${{ matrix.node }}
@@ -89,3 +95,110 @@ jobs:
               # can prefer them on Alpine.
               yarn prebuild
             '
+
+      - name: Archive musl prebuilds
+        run: tar -czf prebuilds-linux-musl-node${{ matrix.node }}.tar.gz -C prebuilds .
+
+      - name: Upload musl artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: prebuild-musl-node${{ matrix.node }}
+          path: prebuilds-linux-musl-node${{ matrix.node }}.tar.gz
+
+  check-version:
+    name: Check version
+    runs-on: ubuntu-22.04
+    if: github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    outputs:
+      publish: ${{ steps.check.outputs.publish }}
+      package_name: ${{ steps.check.outputs.package_name }}
+      package_version: ${{ steps.check.outputs.package_version }}
+      published_version: ${{ steps.check.outputs.published_version }}
+      release_tag: ${{ steps.check.outputs.release_tag }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          submodules: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Determine publish requirement
+        id: check
+        run: |
+          set -euo pipefail
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          if PUBLISHED_VERSION=$(npm view "$PACKAGE_NAME" version 2>/dev/null); then
+            echo "Found published version $PUBLISHED_VERSION"
+          else
+            PUBLISHED_VERSION=""
+            echo "Package $PACKAGE_NAME not found on npm or version lookup failed"
+          fi
+          echo "package_name=$PACKAGE_NAME" >> "$GITHUB_OUTPUT"
+          echo "package_version=$PACKAGE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "published_version=$PUBLISHED_VERSION" >> "$GITHUB_OUTPUT"
+          echo "release_tag=v$PACKAGE_VERSION" >> "$GITHUB_OUTPUT"
+          if [ "$PACKAGE_VERSION" = "$PUBLISHED_VERSION" ]; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "Version $PACKAGE_VERSION already published, skipping" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+            echo "Will publish $PACKAGE_VERSION (latest npm: ${PUBLISHED_VERSION:-none})" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  publish:
+    name: Publish to npm (auto)
+    runs-on: ubuntu-22.04
+    needs:
+      - prebuild
+      - prebuild_musl
+      - check-version
+    if: needs.check-version.result == 'success' && needs.check-version.outputs.publish == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          submodules: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: prebuild-*
+          merge-multiple: true
+          path: artifacts
+
+      - name: Expand prebuild archives
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          mkdir -p prebuilds
+          found=false
+          for archive in artifacts/**/*.tar.gz; do
+            found=true
+            tar -xzf "$archive" -C prebuilds
+          done
+          if [ "$found" = false ]; then
+            echo "No prebuild archives were downloaded." >&2
+            exit 1
+          fi
+
+      - name: Publish to npm via trusted publisher
+        run: npm publish --provenance --access public
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.check-version.outputs.release_tag }}
+          name: ${{ needs.check-version.outputs.release_tag }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
