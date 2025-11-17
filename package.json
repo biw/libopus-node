@@ -1,6 +1,6 @@
 {
   "name": "libopus-node",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "libopus bindings for Node",
   "type": "module",
   "main": "dist/index.js",
