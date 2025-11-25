@@ -133,13 +133,15 @@ jobs:
           operating_system: openbsd
           version: "7.8"
           architecture: x86-64
+          environment_variables: ELECTRON_SKIP_BINARY_DOWNLOAD
           run: |
             set -euo pipefail
+            export ELECTRON_SKIP_BINARY_DOWNLOAD=1
             sudo pkg_add node npm
             sudo npm install -g corepack
             corepack enable
             yarn set version berry
-            yarn install --immutable
+            yarn install --immutable --ignore-optional
             yarn build-tsup
             yarn prebuild
             yarn test
