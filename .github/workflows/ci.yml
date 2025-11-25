@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - "**"
+      - main
   pull_request:
     branches:
       - "**"
@@ -127,6 +127,8 @@ jobs:
 
       - name: Build on OpenBSD
         uses: cross-platform-actions/action@v0.30.0
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
         with:
           operating_system: openbsd
           version: "7.8"
