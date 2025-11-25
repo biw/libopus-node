@@ -116,6 +116,41 @@ jobs:
           name: prebuild-musl-node${{ matrix.node }}
           path: prebuilds-linux-musl-node${{ matrix.node }}.tar.gz
 
+  build_openbsd:
+    name: Build on OpenBSD x86-64
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          submodules: true
+
+      - name: Build on OpenBSD
+        uses: cross-platform-actions/action@v0.25.0
+        with:
+          operating_system: openbsd
+          version: '7.6'
+          architecture: x86-64
+          run: |
+            set -euo pipefail
+            sudo pkg_add node npm
+            npm install -g corepack
+            corepack enable
+            yarn set version berry
+            yarn install --immutable
+            yarn build-tsup
+            yarn prebuild
+            yarn test
+
+      - name: Archive OpenBSD prebuilds
+        run: tar -czf prebuilds-openbsd-x64.tar.gz -C prebuilds .
+
+      - name: Upload OpenBSD artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: prebuild-openbsd-x64
+          path: prebuilds-openbsd-x64.tar.gz
+
   check-version:
     name: Check version
     runs-on: ubuntu-22.04
@@ -170,6 +205,7 @@ jobs:
     needs:
       - build
       - build_musl
+      - build_openbsd
       - check-version
     if: needs.check-version.result == 'success' && needs.check-version.outputs.publish == 'true'
     steps:
