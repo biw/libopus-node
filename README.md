@@ -1,6 +1,9 @@
 # libopus-node
 
-[![Build](https://github.com/biw/libopus-node/workflows/CI/badge.svg)](https://github.com/biw/libopus-node/actions?query=workflow%3ACI)
+[![CI](https://badgen.net/github/checks/biw/libopus-node)](https://github.com/biw/libopus-node/actions)
+[![npm version](https://badgen.net/npm/v/libopus-node)](https://www.npmjs.com/package/libopus-node)
+[![npm downloads](https://badgen.net/npm/dt/libopus-node)](https://www.npmjs.com/package/libopus-node)
+
 
 `libopus-node` is a thin, modern wrapper around the official [libopus 1.5.2](https://opus-codec.org/release/stable/2024/04/12/libopus-1_5_2.html) reference implementation.
 
