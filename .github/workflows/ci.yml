@@ -134,7 +134,7 @@ jobs:
           run: |
             set -euo pipefail
             sudo pkg_add node npm
-            npm install -g corepack
+            sudo npm install -g corepack
             corepack enable
             yarn set version berry
             yarn install --immutable
