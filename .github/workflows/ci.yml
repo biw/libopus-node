@@ -141,7 +141,7 @@ jobs:
             sudo npm install -g corepack
             corepack enable
             yarn set version berry
-            yarn install --immutable --ignore-optional
+            yarn install --immutable 
             yarn build-tsup
             yarn prebuild
             yarn test
